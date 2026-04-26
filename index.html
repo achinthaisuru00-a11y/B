@@ -117,14 +117,13 @@
             50% { top: -35px; }
         }
 
+        /* iOS වල lag වීම වළක්වා ගැනීමට backdrop-filter ඉවත් කර opacity වෙනස් කර ඇත */
         .game-frame {
-            background: rgba(255, 255, 255, 0.25);
+            background: rgba(255, 255, 255, 0.65);
             padding: 12px;
             border-radius: 25px;
             border: 3px dashed #ffb6c1; 
             box-shadow: 0 15px 35px rgba(216, 27, 96, 0.25), inset 0 0 25px rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
             position: relative;
             z-index: 10;
         }
@@ -138,15 +137,14 @@
             aspect-ratio: 9 / 12;
         }
 
+        /* iOS වල lag වීම වළක්වා ගැනීමට backdrop-filter ඉවත් කර ඇත */
         .instruction {
             position: relative;
             color: #d81b60;
             font-size: 15px;
             font-weight: 600;
             margin-top: 25px;
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(5px);
-            -webkit-backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.95);
             padding: 12px 25px;
             border-radius: 25px;
             box-shadow: 0 8px 20px rgba(255, 105, 180, 0.25);
@@ -216,9 +214,7 @@
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(1px);
-            -webkit-backdrop-filter: blur(3px);
+            background-color: rgba(255, 255, 255, 0.5); /* backdrop-filter ඉවත් කර ඇත */
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -471,7 +467,7 @@
     </ul>
 
     <div id="game-ui">
-        <h1>Catch My Love!/ 🎀</h1>
+        <h1>Catch My Love! 🎀</h1>
         <div class="game-wrapper">
             <div class="game-frame">
                 <canvas id="gameCanvas" width="360" height="480"></canvas>
@@ -512,15 +508,8 @@
     <script>
         // --- Sound Effects සහ Background Music Load කිරීම ---
         
-        // Safari Lag එක නැති කරන්න Jump sound එක කීපයක් හදාගන්නවා (Audio Pool)
-        const jumpSounds = [];
-        for (let i = 0; i < 5; i++) {
-            let snd = new Audio('jump.mp3');
-            snd.volume = 0.5;
-            jumpSounds.push(snd);
-        }
-        let currentJumpIndex = 0;
-
+        // Safari Lag එක නැති කරන්න Jump sound එක තාවකාලිකව පාවිච්චි නොකරයි.
+        
         const collectSound = new Audio('heart.mp3');
         const loseSound = new Audio('lose.mp3');
         const winSound = new Audio('win_sound.mp3');
@@ -529,21 +518,19 @@
         const bgMusic = new Audio('bg_music.mp3');
         const winBgMusic = new Audio('win_bg_music.mp3');
 
-        // Sounds වල සද්දෙ ගාණට හදාගන්න (Background එක ටිකක් අඩුවෙන් තියන්න)
         bgMusic.volume = 0.4;
-        bgMusic.loop = true; // දිගටම play වෙන්න
+        bgMusic.loop = true; 
         
         winBgMusic.volume = 0.5;
-        winBgMusic.loop = true; // දිනුවට පස්සෙත් දිගටම play වෙන්න
+        winBgMusic.loop = true; 
         
         collectSound.volume = 0.7;
 
-        let isMusicPlaying = false; // Browser policies නිසා පළවෙනි click එකෙනුයි Music පටන්ගන්න ඕනෙ
+        let isMusicPlaying = false; 
 
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        // Testing වලට 1. යවන්න කලින් 6 කරන්න!
         const WINNING_SCORE = 6; 
         const GRAVITY = 0.6;
         const JUMP_POWER = -9;
@@ -669,7 +656,6 @@
         }
 
         function initGame() {
-            // Background Music එකයි Flag එකයි Reset කිරීම
             isMusicPlaying = false; 
             bgMusic.pause();
             bgMusic.currentTime = 0;
@@ -690,7 +676,6 @@
             
             finalMsg.classList.remove('show-final-msg');
             
-            // Game UI එක නැවත යථා තත්ත්වයට පත් කිරීම
             let gameUI = document.getElementById('game-ui');
             gameUI.style.transition = "opacity 0.8s ease-in-out";
             gameUI.style.opacity = '1';
@@ -723,10 +708,10 @@
             ctx.fillStyle = "#d81b60";
             ctx.font = "bold 20px 'Poppins'";
             ctx.textAlign = "left";
-            ctx.shadowColor = "white";
-            ctx.shadowBlur = 4;
+            
+            // iOS performance issue නිසා Text shadow ඉවත් කර ඇත
+            
             ctx.fillText("Hearts: " + score + " / " + WINNING_SCORE, 15, 35);
-            ctx.shadowBlur = 0; 
         }
 
         function typeWriter() {
@@ -790,18 +775,15 @@
         function triggerWinTransition() {
             gameState = 'won';
             
-            // Background musics මාරු කිරීම
             bgMusic.pause();
             winSound.play(); 
             setTimeout(() => { winBgMusic.play(); }, 1200); 
 
-            // 1. Game board එක ලස්සනට පොඩි වෙලා නැති වෙලා යනවා (Bounce & Shrink)
             let gameUI = document.getElementById('game-ui');
             gameUI.style.transition = "transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.6s";
             gameUI.style.transform = "scale(0) rotate(-10deg)";
             gameUI.style.opacity = '0';
 
-            // 2. Magical Heart Burst Effect (මැදින් විසිවෙන Animation එක)
             const symbols = ['💖', '🌸', '✨', '🎀', '🥰', '💕', '🦋'];
             for(let i = 0; i < 60; i++) {
                 setTimeout(() => {
@@ -809,31 +791,25 @@
                     heart.className = 'burst-emoji';
                     heart.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
 
-                    // Screen එකේ මැද ඉඳන් පටන් ගන්නවා
                     heart.style.left = '50vw';
                     heart.style.top = '45vh';
 
-                    // හතර වටේට විසිවෙන්න ගණනය කිරීම්
                     let angle = Math.random() * Math.PI * 2;
-                    let velocity = Math.random() * 250 + 60; // දුර ප්‍රමාණය
+                    let velocity = Math.random() * 250 + 60; 
                     let tx = Math.cos(angle) * velocity;
                     let ty = Math.sin(angle) * velocity;
 
-                    // CSS Variables වලට අගයන් දීම
                     heart.style.setProperty('--tx', `${tx}px`);
                     heart.style.setProperty('--ty', `${ty}px`);
                     heart.style.setProperty('--rot', `${Math.random() * 360}deg`);
 
-                    // විවිධ ප්‍රමාණයේ emojis
                     heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
                     document.body.appendChild(heart);
 
-                    // ටික වෙලාවකින් අයින් කරනවා
                     setTimeout(() => heart.remove(), 2600);
-                }, i * 15); // එකින් එක එළියට එනවා
+                }, i * 15); 
             }
 
-            // 3. ලියුම එළියට එනවා (Burst එක වෙලා ඉවර වෙනකොටම)
             setTimeout(() => {
                 document.getElementById('overlay-container').style.display = 'flex';
                 let winScreen = document.getElementById('win-screen');
@@ -841,7 +817,7 @@
                 winScreen.classList.add('pop-up-anim');
                 
                 setTimeout(typeWriter, 1000);
-            }, 1300); // Burst එක වෙන්න තත්පර 1.3ක් දෙනවා
+            }, 1300); 
         }
 
         function loop() {
@@ -868,14 +844,14 @@
 
                     if (it.type === 'heart') {
                         collectSound.currentTime = 0;
-                        collectSound.play(); // Heart එක ගත්තම එන සද්දෙ
+                        collectSound.play(); 
                         score++;
                         if (score >= WINNING_SCORE) {
                             triggerWinTransition();
                         }
                     } else if (it.type === 'obstacle') {
-                        bgMusic.pause(); // පැරදුනාම BG music නවත්වන්න
-                        loseSound.play(); // පැරදුනු සද්දෙ Play කරන්න
+                        bgMusic.pause(); 
+                        loseSound.play(); 
 
                         gameState = 'lost';
                         document.getElementById('overlay-container').style.display = 'flex';
@@ -903,19 +879,10 @@
 
         function handleJump() {
             if (gameState === 'playing') {
-                // පළවෙනි click එකෙනුයි Music පටන්ගන්නෙ (Browser autoplay block කරන නිසා)
                 if (!isMusicPlaying) {
                     bgMusic.play().catch(e => console.log("Audio play prevented: ", e));
                     isMusicPlaying = true;
                 }
-
-                // Array එකෙන් ඊළඟට තියෙන sound එක අරන් play කරනවා
-                let snd = jumpSounds[currentJumpIndex];
-                snd.currentTime = 0;
-                snd.play().catch(e => console.log("Jump audio prevented: ", e));
-                
-                // Index එක 1කින් වැඩි කරනවා. 5ට ආවම ආයේ 0ට යනවා.
-                currentJumpIndex = (currentJumpIndex + 1) % jumpSounds.length;
 
                 bunny.jump();
             }
