@@ -174,7 +174,7 @@
             padding: 10px 15px; margin-top: 5px; max-height: 42vh; 
             overflow-y: auto; text-align: left; width: 100%; box-sizing: border-box;
             scroll-behavior: smooth; position: relative;
-            display: flex; flex-direction: column; /* Button එක ලස්සනට මැදට එන්න */
+            display: flex; flex-direction: column;
         }
 
         .letter-scroll-area::-webkit-scrollbar { width: 6px; }
@@ -183,6 +183,7 @@
         .letter-content p {
             font-family: 'Noto Sans Sinhala', sans-serif; font-size: 15px; 
             color: #b71c1c; line-height: 1.6; margin-bottom: 12px; font-weight: 700;
+            position: relative; /* මේක ගොඩක් වැදගත් Emojis හරියට පේන්න */
         }
         
         .letter-greeting {
@@ -197,6 +198,14 @@
         }
 
         @keyframes blinkCursor { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* අකුරු වලින් උඩට පනින Emojis සඳහා CSS */
+        .emoji-wrapper {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            position: relative;
+        }
 
         .word-emoji-pop {
             position: absolute; bottom: 0; left: 0; font-size: 24px;
@@ -223,7 +232,6 @@
             50% { transform: scale(1.05); text-shadow: 0 0 10px rgba(255, 105, 180, 0.5); }
         }
 
-        /* අලුත් Button එකේ Design එක */
         #love-reply-btn {
             display: none; opacity: 0; margin: 10px auto 15px auto;
             font-size: 16px; padding: 12px 25px; border-radius: 30px;
@@ -236,7 +244,6 @@
             100% { transform: scale(1); box-shadow: 0 5px 15px rgba(255, 105, 180, 0.4); }
         }
 
-        /* Heart Confetti Animation එක */
         .confetti-heart {
             position: fixed; top: -10vh; font-size: 24px; z-index: 9999;
             pointer-events: none; animation: fallConfetti linear forwards;
@@ -343,7 +350,7 @@
         const ctx = canvas.getContext("2d");
 
         // Game Difficulty Settings (Hard Mode)
-        const WINNING_SCORE = 1; 
+        const WINNING_SCORE = 10; 
         const GRAVITY = 0.65; 
         const JUMP_POWER = -9.5; 
         const GAME_SPEED = 4.2; 
@@ -374,7 +381,7 @@
         const contentContainer = document.getElementById('typewriter-content');
         const scrollBox = document.getElementById('scroll-box');
         const finalMsg = document.getElementById('final-love-msg');
-        const replyBtn = document.getElementById('love-reply-btn'); // අලුත් Button එක
+        const replyBtn = document.getElementById('love-reply-btn');
 
         let triggeredWords = new Set();
         const wordEmojiMap = {
@@ -385,14 +392,19 @@
             "දරුවෙක්": "😘", "ලස්සනට": "💖", "ලස්සනයි": "💖",
         };
 
-        function spawnWordEmoji(emoji) {
-            let floatingEmoji = document.createElement('div');
+        // ආයෙත් පරණ විදිහටම අකුරු වලින් උඩට පනින්න හදපු Function එක
+        function spawnWordEmoji(emoji, pElement) {
+            let wrapper = document.createElement('span');
+            wrapper.className = 'emoji-wrapper';
+            
+            let floatingEmoji = document.createElement('span');
             floatingEmoji.className = 'word-emoji-pop';
             floatingEmoji.innerText = emoji;
-            floatingEmoji.style.left = (Math.random() * 60 + 20) + '%';
-            floatingEmoji.style.bottom = '10px';
-            document.getElementById('scroll-box').appendChild(floatingEmoji);
-            setTimeout(() => floatingEmoji.remove(), 1500);
+            
+            wrapper.appendChild(floatingEmoji);
+            pElement.appendChild(wrapper); 
+            
+            setTimeout(() => wrapper.remove(), 1200);
         }
 
         class Bunny {
@@ -429,7 +441,7 @@
             contentContainer.innerHTML = ''; currentPara = 0; currentChar = 0;
             triggeredWords.clear(); if (typingTimeout) clearTimeout(typingTimeout);
             finalMsg.classList.remove('show-final-msg');
-            replyBtn.style.display = 'none'; replyBtn.style.opacity = '0'; // Button එක reset කිරීම
+            replyBtn.style.display = 'none'; replyBtn.style.opacity = '0'; 
             replyBtn.innerText = "මාත් ආදරෙයි! 🥺💖"; replyBtn.style.animation = "pulseBtn 2s infinite";
             
             let gameUI = document.getElementById('game-ui');
@@ -477,7 +489,8 @@
                             if (currentStr.endsWith(word)) {
                                 let triggerKey = currentPara + "-" + (currentChar - word.length);
                                 if (!triggeredWords.has(triggerKey)) {
-                                    triggeredWords.add(triggerKey); spawnWordEmoji(wordEmojiMap[word]); 
+                                    triggeredWords.add(triggerKey); 
+                                    spawnWordEmoji(wordEmojiMap[word], p); // මෙතනට pElement එක පාස් කළා
                                 }
                             }
                         }
@@ -493,7 +506,6 @@
                 setTimeout(() => {
                     finalMsg.classList.add('show-final-msg');
                     
-                    // Button එක පේන්න හදපු තැන
                     replyBtn.style.display = 'block';
                     setTimeout(() => { 
                         replyBtn.style.opacity = '1'; 
@@ -504,19 +516,15 @@
             }
         }
 
-        // Button එක Click කළාම එන Confetti Effect එක
         replyBtn.addEventListener('click', function() {
-            // පොඩි සද්දයක් play කරමු
             collectSound.currentTime = 0;
             collectSound.play();
             
-            // Button එකේ අකුරු මාරු කිරීම
             this.innerText = "ආදරෙයි ගොඩාක්! 😘💕";
             this.style.animation = "none";
             this.style.transform = "scale(1.1)";
             this.style.backgroundColor = "#ff1493";
 
-            // Confetti වැස්ස
             const confettiSymbols = ['💖', '💕', '🥰', '🌸', '✨', '🎀'];
             for(let i = 0; i < 80; i++) {
                 setTimeout(() => {
@@ -525,11 +533,11 @@
                     confetti.innerHTML = confettiSymbols[Math.floor(Math.random() * confettiSymbols.length)];
                     confetti.style.left = Math.random() * 100 + 'vw';
                     confetti.style.fontSize = (Math.random() * 20 + 15) + 'px';
-                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's'; // වැටෙන වේගය
+                    confetti.style.animationDuration = (Math.random() * 3 + 2) + 's'; 
                     document.body.appendChild(confetti);
                     
                     setTimeout(() => confetti.remove(), 5000);
-                }, i * 40); // වැටෙන පරතරය
+                }, i * 40); 
             }
         });
 
