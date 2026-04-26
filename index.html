@@ -117,7 +117,7 @@
             50% { top: -35px; }
         }
 
-        /* විනිවිද පේන එක නැති කරලා ලස්සන solid background එකක් දැම්මා */
+        /* පිටිපස්සෙ Animation එක නොපෙනෙන විදිහට Solid Background එකක් දැම්මා */
         .game-frame {
             background: #ffffff;
             padding: 12px;
@@ -128,7 +128,6 @@
             z-index: 10;
         }
 
-        /* කැන්වස් එකටත් solid ළා රෝස පාටක් දුන්නා */
         #gameCanvas {
             background: #fff0f3;
             border-radius: 15px; 
@@ -172,7 +171,6 @@
             border-color: transparent transparent rgba(255, 255, 255, 0.85) transparent;
         }
 
-        /* Magical Burst Animation */
         .burst-emoji {
             position: fixed;
             z-index: 999;
@@ -261,7 +259,6 @@
             width: 100%;
             box-sizing: border-box;
             scroll-behavior: smooth;
-            position: relative; /* අකුරු උඩින් පාවෙන emojis වලට ලේසි වෙන්න */
         }
 
         .letter-scroll-area::-webkit-scrollbar { width: 6px; }
@@ -305,11 +302,20 @@
             50% { opacity: 0; }
         }
 
-        /* අලුත් Emoji Pop Animation එක (Lag වෙන්නෙ නෑ) */
+        /* අකුරු ඉවර වෙන තැනම Emoji එක පේන්න හදපු CSS */
+        .emoji-wrapper {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            position: relative;
+        }
+
         .word-emoji-pop {
             position: absolute;
-            font-size: 26px;
-            animation: floatUpWord 1.5s ease-out forwards;
+            bottom: 0;
+            left: 0;
+            font-size: 24px;
+            animation: floatUpWord 1.2s ease-out forwards;
             pointer-events: none;
             z-index: 50;
             text-shadow: 0px 0px 5px rgba(255,255,255,0.8);
@@ -317,8 +323,8 @@
 
         @keyframes floatUpWord {
             0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 1; }
-            40% { transform: translateY(-30px) scale(1.4) rotate(15deg); opacity: 1; }
-            100% { transform: translateY(-70px) scale(1) rotate(-15deg); opacity: 0; }
+            50% { transform: translateY(-25px) scale(1.5) rotate(10deg); opacity: 1; }
+            100% { transform: translateY(-45px) scale(1) rotate(-10deg); opacity: 0; }
         }
 
         #final-love-msg {
@@ -494,7 +500,7 @@
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
 
-        const WINNING_SCORE = 1; 
+        const WINNING_SCORE = 6; 
         const GRAVITY = 0.6;
         const JUMP_POWER = -9;
         const GAME_SPEED = 3.4;
@@ -551,20 +557,19 @@
             "ලස්සනයි": "💖",
         };
 
-        // අලුත් විදිහට Emojis පාවෙන්න හදපු කොටස (Lag වෙන්නෙ නෑ)
-        function spawnWordEmoji(emoji) {
-            let floatingEmoji = document.createElement('div');
+        // අකුරු ඉවර වෙන තැනින්ම කලින් වගේ Emoji එක පනින්න හදපු Function එක
+        function spawnWordEmoji(emoji, pElement) {
+            let wrapper = document.createElement('span');
+            wrapper.className = 'emoji-wrapper';
+            
+            let floatingEmoji = document.createElement('span');
             floatingEmoji.className = 'word-emoji-pop';
             floatingEmoji.innerText = emoji;
             
-            // ලියුම උඩින් අහඹු විදිහට (Random) තැන්වලින් උඩට පාවෙන්න හදලා තියෙන්නේ
-            floatingEmoji.style.left = (Math.random() * 60 + 20) + '%';
-            floatingEmoji.style.bottom = '10px';
+            wrapper.appendChild(floatingEmoji);
+            pElement.appendChild(wrapper); // pElement එකට එකතු කළාම අකුරු ලඟින්ම පාවෙනවා
             
-            // මේක scroll box එකටම සම්බන්ධ කරන නිසා text එකට බරක් නෑ
-            document.getElementById('scroll-box').appendChild(floatingEmoji);
-            
-            setTimeout(() => floatingEmoji.remove(), 1500);
+            setTimeout(() => wrapper.remove(), 1200);
         }
 
         class Bunny {
@@ -716,7 +721,7 @@
                                 let triggerKey = currentPara + "-" + (currentChar - word.length);
                                 if (!triggeredWords.has(triggerKey)) {
                                     triggeredWords.add(triggerKey);
-                                    spawnWordEmoji(wordEmojiMap[word]); // වෙනස් කළ කොටස
+                                    spawnWordEmoji(wordEmojiMap[word], p); // ආපහු pElement එකට යැව්වා
                                 }
                             }
                         }
