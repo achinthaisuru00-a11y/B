@@ -165,7 +165,7 @@
         }
 
         #win-screen.panel::after {
-            content: '🧸'; position: absolute; bottom: -20px; right: 15px; font-size: 40px;
+            content: '🧸'; position: absolute; bottom: -20px; right: 15px; font-size: 60px;
             filter: drop-shadow(0 4px 6px rgba(255,105,180,0.4)); animation: bounceBow 1.5s ease-in-out infinite; z-index: 20;
         }
 
@@ -350,7 +350,7 @@
         const ctx = canvas.getContext("2d");
 
         // Game Difficulty Settings (Hard Mode)
-        const WINNING_SCORE = 1; 
+        const WINNING_SCORE = 10; 
         const GRAVITY = 0.65; 
         const JUMP_POWER = -9.5; 
         const GAME_SPEED = 4.2; 
@@ -497,7 +497,7 @@
                     }
 
                     scrollBox.scrollTop = scrollBox.scrollHeight;
-                    typingTimeout = setTimeout(typeWriter, 100); 
+                    typingTimeout = setTimeout(typeWriter, 90); 
                 } else {
                     currentPara++; currentChar = 0; typingTimeout = setTimeout(typeWriter, 1000); 
                 }
